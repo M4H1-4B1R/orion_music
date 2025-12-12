@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 
 void main() {
   runApp(const MyApp());
@@ -25,9 +26,31 @@ class MusicPlayerScreen extends StatefulWidget {
 }
 
 class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
+  final AudioPlayer _audioPlayer = AudioPlayer();
   // state variables
   bool isPlaying = false;
-  double sliderValue = 0.3;
+  double sliderValue = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    // load song when app starts
+    _setupAudio();
+  }
+
+  Future<void> _setupAudio() async {
+    // song url (mp3)
+    await _audioPlayer.setUrl(
+      'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+    );
+  }
+
+  @override
+  void dispose() {
+    // releas memory when closed
+    _audioPlayer.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +126,13 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Slider(
                 value: sliderValue,
-                onChanged: (value) {},
+                min: 0.0,
+                max: 1.0,
+                onChanged: (value) {
+                  setState(() {
+                    sliderValue = value;
+                  });
+                },
                 activeColor: const Color(0xFFFF4B4B), // Matches the glow
                 inactiveColor: Colors.white10,
               ),
@@ -125,6 +154,11 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                 // Custom Glowing Play Button
                 GestureDetector(
                   onTap: () {
+                    if (isPlaying) {
+                      _audioPlayer.pause();
+                    } else {
+                      _audioPlayer.play();
+                    }
                     setState(() {
                       isPlaying = !isPlaying;
                     });

@@ -113,23 +113,24 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
     super.dispose();
   }
 
-String _formatDuration(Duration? duration) {
-  if (duration == null) return '--:--';
-  
-  // Helper to add a leading zero (e.g., 9 -> 09)
-  String twoDigits(int n) => n.toString().padLeft(2, '0');
-  
-  final hours = duration.inHours;
-  final minutes = duration.inMinutes.remainder(60);
-  final seconds = duration.inSeconds.remainder(60);
+  String _formatDuration(Duration? duration) {
+    if (duration == null) return '--:--';
 
-  // If the song is over an hour, include the hour part
-  if (duration.inHours > 0) {
-    return '${twoDigits(hours)}:${twoDigits(minutes)}:${twoDigits(seconds)}';
-  } else {
-    return '${twoDigits(minutes)}:${twoDigits(seconds)}';
+    // Helper to add a leading zero (e.g., 9 -> 09)
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    final seconds = duration.inSeconds.remainder(60);
+
+    // If the song is over an hour, include the hour part
+    if (duration.inHours > 0) {
+      return '${twoDigits(hours)}:${twoDigits(minutes)}:${twoDigits(seconds)}';
+    } else {
+      return '${twoDigits(minutes)}:${twoDigits(seconds)}';
+    }
   }
-}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -339,6 +340,48 @@ String _formatDuration(Duration? duration) {
                 ],
               ),
             ),
+      // inside Scaffold
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFFFF4B4B),
+        child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            backgroundColor: const Color(0xFF1E1E2C), // Match theme
+            builder: (context) {
+              return ListView.builder(
+                itemCount: playlist.length,
+                itemBuilder: (context, index) {
+                  final song = playlist[index];
+                  return ListTile(
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: Image.network(
+                        song['image']!,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    title: Text(
+                      song['title']!, // Your solution!
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    subtitle: Text(
+                      song['artist']!,
+                      style: TextStyle(color: Colors.white.withOpacity(0.6)),
+                    ),
+                    onTap: () {
+                      // TODO: Play this song
+                      Navigator.pop(context); // Close the sheet
+                    },
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

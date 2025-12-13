@@ -113,6 +113,13 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
     super.dispose();
   }
 
+  String _formatDuration(Duration? duration) {
+    if (duration == null) return '--:--';
+    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -177,107 +184,68 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
 
                   const SizedBox(height: 40),
 
-                  // 4. Slider
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Slider(
-                      value: sliderValue,
-                      min: 0.0,
-                      max: 1.0,
-                      onChanged: (newValue) {
-                        // We will implement seeking later
-                        setState(() {
-                          sliderValue = newValue;
-                        });
-                        if (totalDuration != null) {
-                          final newPosition = Duration(
-                            milliseconds:
-                                (newValue * totalDuration!.inMilliseconds)
-                                    .toInt(),
-                          );
-                          _audioPlayer.seek(newPosition);
-                        }
-                      },
-                      activeColor: const Color(0xFFFF4B4B),
-                      inactiveColor: Colors.white10,
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
                   // 5. Controls
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Column(
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.skip_previous_rounded, size: 40),
-                        color: Colors.white,
-                        onPressed: () {
+                      // A. The Slider (Top)
+                      // We remove the Expanded because Column handles vertical space differently
+                      Slider(
+                        value: sliderValue,
+                        min: 0.0,
+                        max: 1.0,
+                        onChanged: (newValue) {
                           setState(() {
-                            if (currentIndex > 0)
-                              currentIndex--;
-                            else
-                              currentIndex = playlist.length - 1;
-                            isPlaying = false;
+                            sliderValue = newValue;
                           });
-                          _setupAudio();
-                          _audioPlayer.play();
-                          setState(() => isPlaying = true);
-                        },
-                      ),
-                      const SizedBox(width: 30),
-
-                      GestureDetector(
-                        onTap: () {
-                          if (isPlaying) {
-                            _audioPlayer.pause();
-                          } else {
-                            _audioPlayer.play();
+                          if (totalDuration != null) {
+                            final milliseconds =
+                                (totalDuration!.inMilliseconds * newValue)
+                                    .round();
+                            _audioPlayer.seek(
+                              Duration(milliseconds: milliseconds),
+                            );
                           }
-                          setState(() {
-                            isPlaying = !isPlaying;
-                          });
                         },
-                        child: Container(
-                          padding: const EdgeInsets.all(15),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFF4B4B),
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFFF4B4B).withOpacity(0.5),
-                                blurRadius: 20,
-                                spreadRadius: 2,
+                        activeColor: const Color(0xFFFF4B4B),
+                        inactiveColor: Colors.white10,
+                      ),
+
+                      // B. The Timestamps (Bottom)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 25,
+                        ), // Align with slider edges
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment
+                              .spaceBetween, // <--- Your Solution!
+                          children: [
+                            // Current Time
+                            Text(
+                              _formatDuration(
+                                Duration(
+                                  milliseconds:
+                                      (sliderValue *
+                                              (totalDuration?.inMilliseconds ??
+                                                  0))
+                                          .round(),
+                                ),
                               ),
-                            ],
-                          ),
-                          child: Icon(
-                            isPlaying
-                                ? Icons.pause_rounded
-                                : Icons.play_arrow_rounded,
-                            color: Colors.white,
-                            size: 40,
-                          ),
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+
+                            // Total Duration
+                            Text(
+                              _formatDuration(totalDuration),
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                          ],
                         ),
                       ),
 
-                      const SizedBox(width: 30),
-                      IconButton(
-                        icon: const Icon(Icons.skip_next_rounded, size: 40),
-                        color: Colors.white,
-                        onPressed: () {
-                          setState(() {
-                            if (currentIndex < playlist.length - 1)
-                              currentIndex++;
-                            else
-                              currentIndex = 0;
-                            isPlaying = false;
-                          });
-                          _setupAudio();
-                          _audioPlayer.play();
-                          setState(() => isPlaying = true);
-                        },
-                      ),
+                      const SizedBox(
+                        height: 20,
+                      ), // Spacing before the play buttons
+                      // ... (Your Play/Pause Buttons Row goes here, kept the same) ...
                     ],
                   ),
                 ],

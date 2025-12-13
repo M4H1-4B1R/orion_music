@@ -113,13 +113,23 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
     super.dispose();
   }
 
-  String _formatDuration(Duration? duration) {
-    if (duration == null) return '--:--';
-    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
-  }
+String _formatDuration(Duration? duration) {
+  if (duration == null) return '--:--';
+  
+  // Helper to add a leading zero (e.g., 9 -> 09)
+  String twoDigits(int n) => n.toString().padLeft(2, '0');
+  
+  final hours = duration.inHours;
+  final minutes = duration.inMinutes.remainder(60);
+  final seconds = duration.inSeconds.remainder(60);
 
+  // If the song is over an hour, include the hour part
+  if (duration.inHours > 0) {
+    return '${twoDigits(hours)}:${twoDigits(minutes)}:${twoDigits(seconds)}';
+  } else {
+    return '${twoDigits(minutes)}:${twoDigits(seconds)}';
+  }
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -324,7 +334,6 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                           ),
                         ],
                       ),
-                      // ... (Your Play/Pause Buttons Row goes here, kept the same) ...
                     ],
                   ),
                 ],

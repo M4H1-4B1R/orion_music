@@ -245,6 +245,85 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                       const SizedBox(
                         height: 20,
                       ), // Spacing before the play buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: const Icon(
+                              Icons.skip_previous_rounded,
+                              size: 40,
+                            ),
+                            color: Colors.white,
+                            onPressed: () {
+                              setState(() {
+                                if (currentIndex > 0)
+                                  currentIndex--;
+                                else
+                                  currentIndex = playlist.length - 1;
+                                isPlaying = false;
+                              });
+                              _setupAudio();
+                              _audioPlayer.play();
+                              setState(() => isPlaying = true);
+                            },
+                          ),
+                          const SizedBox(width: 30),
+
+                          GestureDetector(
+                            onTap: () {
+                              if (isPlaying) {
+                                _audioPlayer.pause();
+                              } else {
+                                _audioPlayer.play();
+                              }
+                              setState(() {
+                                isPlaying = !isPlaying;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(15),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF4B4B),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFFFF4B4B,
+                                    ).withOpacity(0.5),
+                                    blurRadius: 20,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                isPlaying
+                                    ? Icons.pause_rounded
+                                    : Icons.play_arrow_rounded,
+                                color: Colors.white,
+                                size: 40,
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(width: 30),
+                          IconButton(
+                            icon: const Icon(Icons.skip_next_rounded, size: 40),
+                            color: Colors.white,
+                            onPressed: () {
+                              setState(() {
+                                if (currentIndex < playlist.length - 1)
+                                  currentIndex++;
+                                else
+                                  currentIndex = 0;
+                                isPlaying = false;
+                              });
+                              _setupAudio();
+                              _audioPlayer.play();
+                              setState(() => isPlaying = true);
+                            },
+                          ),
+                        ],
+                      ),
                       // ... (Your Play/Pause Buttons Row goes here, kept the same) ...
                     ],
                   ),

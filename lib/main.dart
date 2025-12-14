@@ -343,47 +343,75 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
       // inside Scaffold
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFFF4B4B),
-        child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+        // UPDATED ICON: clearer "Playlist" meaning
+        child: const Icon(
+          Icons.queue_music_rounded,
+          color: Colors.white,
+          size: 30,
+        ),
         onPressed: () {
           showModalBottomSheet(
             context: context,
-            backgroundColor: const Color(0xFF1E1E2C), // Match theme
+            backgroundColor: const Color(0xFF1E1E2C),
+            // Use shape to give the top corners of the SHEET itself a curve
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
             builder: (context) {
-              return ListView.builder(
-                itemCount: playlist.length,
-                itemBuilder: (context, index) {
-                  final song = playlist[index];
-                  return ListTile(
-                    leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Image.network(
-                        song['image']!,
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                      ),
+              return Column(
+                mainAxisSize: MainAxisSize.min, // Wrap content height
+                children: [
+                  // --- THE PILL HANDLE ---
+                  const SizedBox(height: 10), // Spacing from top
+                  Container(
+                    width: 40,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.3), // Subtle grey
+                      borderRadius: BorderRadius.circular(10), // Fully rounded
                     ),
-                    title: Text(
-                      song['title']!, // Your solution!
-                      style: const TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(height: 10), // Spacing between pill and list
+                  // --- THE LIST ---
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: playlist.length,
+                      itemBuilder: (context, index) {
+                        final song = playlist[index];
+                        return ListTile(
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: Image.network(
+                              song['image']!,
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          title: Text(
+                            song['title']!,
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          subtitle: Text(
+                            song['artist']!,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.6),
+                            ),
+                          ),
+                          onTap: () {
+                            setState(() {
+                              currentIndex = index;
+                              isPlaying = true;
+                            });
+                            _setupAudio();
+                            _audioPlayer.play();
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
                     ),
-                    subtitle: Text(
-                      song['artist']!,
-                      style: TextStyle(color: Colors.white.withOpacity(0.6)),
-                    ),
-                    onTap: () {
-                      //  Play this song
-                      setState(() {
-                        currentIndex = index;
-                        isPlaying = true;
-                      });
-                      _setupAudio();
-                      _audioPlayer.play();
-
-                      Navigator.pop(context); // Close the sheet
-                    },
-                  );
-                },
+                  ),
+                ],
               );
             },
           );

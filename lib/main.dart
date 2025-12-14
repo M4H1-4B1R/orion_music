@@ -372,7 +372,14 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                       style: TextStyle(color: Colors.white.withOpacity(0.6)),
                     ),
                     onTap: () {
-                      // TODO: Play this song
+                      //  Play this song
+                      setState(() {
+                        currentIndex = index;
+                        isPlaying = true;
+                      });
+                      _setupAudio();
+                      _audioPlayer.play();
+
                       Navigator.pop(context); // Close the sheet
                     },
                   );

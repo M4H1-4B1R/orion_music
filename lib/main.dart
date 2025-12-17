@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:xml/xml.dart';
 import 'package:http/http.dart' as http;
+import 'dart:ui';
 
 void main() {
   runApp(const MyApp());
@@ -135,211 +136,259 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF1E1E2C),
-      body: isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFFFF4B4B)),
-            )
-          : Center(
-              // Only show UI when data is ready
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // 1. Album Art
-                  Container(
-                    width: 300,
-                    height: 300,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(30),
-                      image: DecorationImage(
-                        image: NetworkImage(playlist[currentIndex]['image']!),
-                        fit: BoxFit.cover,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFF4B4B).withOpacity(0.4),
-                          blurRadius: 60,
-                          spreadRadius: -10,
-                          offset: const Offset(0, 30),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 40),
-
-                  // 2. Song Title (Dynamic)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Text(
-                      playlist[currentIndex]['title']!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24, // Slightly smaller to fit long titles
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // 3. Artist Name
-                  Text(
-                    playlist[currentIndex]['artist']!,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.6),
-                      fontSize: 18,
-                    ),
-                  ),
-
-                  const SizedBox(height: 40),
-
-                  // 5. Controls
-                  Column(
+      body: Stack(
+        children: [
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xff24243e),
+                  const Color(0xff7303c0),
+                  const Color(0xff03001e),
+                ],
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(color: Colors.black.withOpacity(0.4)),
+            ),
+          ),
+          isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF7303c0)),
+                )
+              : Center(
+                  // Only show UI when data is ready
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // A. The Slider (Top)
-                      // We remove the Expanded because Column handles vertical space differently
-                      Slider(
-                        value: sliderValue,
-                        min: 0.0,
-                        max: 1.0,
-                        onChanged: (newValue) {
-                          setState(() {
-                            sliderValue = newValue;
-                          });
-                          if (totalDuration != null) {
-                            final milliseconds =
-                                (totalDuration!.inMilliseconds * newValue)
-                                    .round();
-                            _audioPlayer.seek(
-                              Duration(milliseconds: milliseconds),
-                            );
-                          }
-                        },
-                        activeColor: const Color(0xFFFF4B4B),
-                        inactiveColor: Colors.white10,
-                      ),
-
-                      // B. The Timestamps (Bottom)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 25,
-                        ), // Align with slider edges
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment
-                              .spaceBetween, // <--- Your Solution!
-                          children: [
-                            // Current Time
-                            Text(
-                              _formatDuration(
-                                Duration(
-                                  milliseconds:
-                                      (sliderValue *
-                                              (totalDuration?.inMilliseconds ??
-                                                  0))
-                                          .round(),
-                                ),
-                              ),
-                              style: const TextStyle(color: Colors.white70),
+                      // 1. Album Art
+                      Container(
+                        width: 300,
+                        height: 300,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30),
+                          image: DecorationImage(
+                            image: NetworkImage(
+                              playlist[currentIndex]['image']!,
                             ),
-
-                            // Total Duration
-                            Text(
-                              _formatDuration(totalDuration),
-                              style: const TextStyle(color: Colors.white70),
+                            fit: BoxFit.cover,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF121212).withOpacity(0.5),
+                              blurRadius: 60,
+                              spreadRadius: -10,
+                              offset: const Offset(0, 30),
                             ),
                           ],
                         ),
                       ),
 
-                      const SizedBox(
-                        height: 20,
-                      ), // Spacing before the play buttons
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      const SizedBox(height: 40),
+
+                      // 2. Song Title (Dynamic)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Text(
+                          playlist[currentIndex]['title']!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24, // Slightly smaller to fit long titles
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      // 3. Artist Name
+                      Text(
+                        playlist[currentIndex]['artist']!,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.6),
+                          fontSize: 18,
+                        ),
+                      ),
+
+                      const SizedBox(height: 40),
+
+                      // 5. Controls
+                      Column(
                         children: [
-                          IconButton(
-                            icon: const Icon(
-                              Icons.skip_previous_rounded,
-                              size: 40,
-                            ),
-                            color: Colors.white,
-                            onPressed: () {
+                          // A. The Slider (Top)
+                          // We remove the Expanded because Column handles vertical space differently
+                          Slider(
+                            value: sliderValue,
+                            min: 0.0,
+                            max: 1.0,
+                            onChanged: (newValue) {
                               setState(() {
-                                if (currentIndex > 0)
-                                  currentIndex--;
-                                else
-                                  currentIndex = playlist.length - 1;
-                                isPlaying = false;
+                                sliderValue = newValue;
                               });
-                              _setupAudio();
-                              _audioPlayer.play();
-                              setState(() => isPlaying = true);
-                            },
-                          ),
-                          const SizedBox(width: 30),
-
-                          GestureDetector(
-                            onTap: () {
-                              if (isPlaying) {
-                                _audioPlayer.pause();
-                              } else {
-                                _audioPlayer.play();
+                              if (totalDuration != null) {
+                                final milliseconds =
+                                    (totalDuration!.inMilliseconds * newValue)
+                                        .round();
+                                _audioPlayer.seek(
+                                  Duration(milliseconds: milliseconds),
+                                );
                               }
-                              setState(() {
-                                isPlaying = !isPlaying;
-                              });
                             },
-                            child: Container(
-                              padding: const EdgeInsets.all(15),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFF4B4B),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(
-                                      0xFFFF4B4B,
-                                    ).withOpacity(0.5),
-                                    blurRadius: 20,
-                                    spreadRadius: 2,
+                            activeColor: const Color(0xFFfdeff9),
+                            inactiveColor: Colors.white10,
+                          ),
+
+                          // B. The Timestamps (Bottom)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 25,
+                            ), // Align with slider edges
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment
+                                  .spaceBetween, // <--- Your Solution!
+                              children: [
+                                // Current Time
+                                Text(
+                                  _formatDuration(
+                                    Duration(
+                                      milliseconds:
+                                          (sliderValue *
+                                                  (totalDuration
+                                                          ?.inMilliseconds ??
+                                                      0))
+                                              .round(),
+                                    ),
                                   ),
-                                ],
-                              ),
-                              child: Icon(
-                                isPlaying
-                                    ? Icons.pause_rounded
-                                    : Icons.play_arrow_rounded,
-                                color: Colors.white,
-                                size: 40,
-                              ),
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+
+                                // Total Duration
+                                Text(
+                                  _formatDuration(totalDuration),
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+                              ],
                             ),
                           ),
 
-                          const SizedBox(width: 30),
-                          IconButton(
-                            icon: const Icon(Icons.skip_next_rounded, size: 40),
-                            color: Colors.white,
-                            onPressed: () {
-                              setState(() {
-                                if (currentIndex < playlist.length - 1)
-                                  currentIndex++;
-                                else
-                                  currentIndex = 0;
-                                isPlaying = false;
-                              });
-                              _setupAudio();
-                              _audioPlayer.play();
-                              setState(() => isPlaying = true);
-                            },
+                          const SizedBox(
+                            height: 20,
+                          ), // Spacing before the play buttons
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.skip_previous_rounded,
+                                  size: 40,
+                                ),
+                                color: Colors.white,
+                                onPressed: () {
+                                  setState(() {
+                                    if (currentIndex > 0)
+                                      currentIndex--;
+                                    else
+                                      currentIndex = playlist.length - 1;
+                                    isPlaying = false;
+                                  });
+                                  _setupAudio();
+                                  _audioPlayer.play();
+                                  setState(() => isPlaying = true);
+                                },
+                              ),
+                              const SizedBox(width: 30),
+
+                              GestureDetector(
+                                onTap: () {
+                                  if (isPlaying) {
+                                    _audioPlayer.pause();
+                                  } else {
+                                    _audioPlayer.play();
+                                  }
+                                  setState(() {
+                                    isPlaying = !isPlaying;
+                                  });
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(15),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    // 1. The Glass Gradient Fill
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Colors.white.withOpacity(
+                                          0.2,
+                                        ), // Brighter at top left
+                                        Colors.white.withOpacity(
+                                          0.05,
+                                        ), // Almost see-through at bottom right
+                                      ],
+                                    ),
+                                    // 2. The Thin Glass Rim Border
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.4),
+                                      width: 1.5,
+                                    ),
+                                    // 3. A subtle dark shadow for depth underneath the glass button
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.3),
+                                        blurRadius: 15,
+                                        spreadRadius: 1,
+                                        offset: const Offset(0, 5),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Icon(
+                                    isPlaying
+                                        ? Icons.pause_rounded
+                                        : Icons.play_arrow_rounded,
+                                    color: Colors.white,
+                                    size: 40,
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(width: 30),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.skip_next_rounded,
+                                  size: 40,
+                                ),
+                                color: Colors.white,
+                                onPressed: () {
+                                  setState(() {
+                                    if (currentIndex < playlist.length - 1)
+                                      currentIndex++;
+                                    else
+                                      currentIndex = 0;
+                                    isPlaying = false;
+                                  });
+                                  _setupAudio();
+                                  _audioPlayer.play();
+                                  setState(() => isPlaying = true);
+                                },
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
+                ),
+        ],
+      ),
       // inside Scaffold
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFFF4B4B),

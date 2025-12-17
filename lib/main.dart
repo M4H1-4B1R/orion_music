@@ -395,69 +395,103 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
           // This is your original Bottom Sheet logic
           showModalBottomSheet(
             context: context,
-            isScrollControlled: true,
-            backgroundColor:
-                Colors.transparent, // Important for glass effect later
+            isScrollControlled: true, // Make the sheet scrollable
+            backgroundColor: Colors.transparent, // Match theme
             builder: (context) {
-              // ... (Keep your original DraggableScrollableSheet code here) ...
-              // Note: I'll show you how to make the sheet glassy in the next step!
               return DraggableScrollableSheet(
                 initialChildSize: 0.7,
                 minChildSize: 0.5,
                 maxChildSize: 0.9,
                 expand: false,
                 builder: (context, scrollController) {
-                  return Container(
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF1E1E2C),
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(20),
-                      ),
+                  return ClipRRect(
+                    // Clip the blur to match our rounded corners
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(30),
                     ),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 10), // Spacing from top
-                        Expanded(
-                          child: ListView.builder(
-                            itemCount: playlist.length,
-                            itemBuilder: (context, index) {
-                              final song = playlist[index];
-                              return ListTile(
-                                leading: ClipRRect(
-                                  borderRadius: BorderRadius.circular(4),
-                                  child: Image.network(
-                                    song['image']!,
-                                    width: 50,
-                                    height: 50,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                title: Text(
-                                  song['title']!, // Your solution!
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                                subtitle: Text(
-                                  song['artist']!,
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.6),
-                                  ),
-                                ),
-                                onTap: () {
-                                  //  Play this song
-                                  setState(() {
-                                    currentIndex = index;
-                                    isPlaying = true;
-                                  });
-                                  _setupAudio();
-                                  _audioPlayer.play();
+                    child: BackdropFilter(
+                      // The Blur Effect
+                      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          // The Tint: Dark semi-transparent background
+                          color: const Color(0xFF1E1E2C).withOpacity(0.7),
 
-                                  Navigator.pop(context); // Close the sheet
-                                },
-                              );
-                            },
+                          // use Border.all (Uniform) instead of Border
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.2),
+                            width: 1.0,
+                          ),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(30),
                           ),
                         ),
-                      ],
+                        child: Column(
+                          children: [
+                            // Little Handle Bar to show it's draggable
+                            Center(
+                              child: Container(
+                                margin: const EdgeInsets.only(
+                                  top: 10,
+                                  bottom: 10,
+                                ),
+                                width: 40,
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+
+                            // The List
+                            Expanded(
+                              child: ListView.builder(
+                                controller:
+                                    scrollController, // Crucial for scrolling!
+                                itemCount: playlist.length,
+                                itemBuilder: (context, index) {
+                                  final song = playlist[index];
+                                  return ListTile(
+                                    leading: ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.network(
+                                        song['image']!,
+                                        width: 50,
+                                        height: 50,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    title: Text(
+                                      song['title']!,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      song['artist']!,
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.6),
+                                      ),
+                                    ),
+                                    onTap: () {
+                                      //  Play this song
+                                      setState(() {
+                                        currentIndex = index;
+                                        isPlaying = true;
+                                      });
+                                      _setupAudio();
+                                      _audioPlayer.play();
+
+                                      Navigator.pop(context); // Close the sheet
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   );
                 },

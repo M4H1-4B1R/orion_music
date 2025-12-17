@@ -390,19 +390,17 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
         ],
       ),
       // inside Scaffold
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFFFF4B4B),
-        child: const Icon(
-          Icons.queue_music_rounded,
-          color: Colors.white,
-          size: 30,
-        ),
-        onPressed: () {
+      floatingActionButton: GestureDetector(
+        onTap: () {
+          // This is your original Bottom Sheet logic
           showModalBottomSheet(
             context: context,
-            isScrollControlled: true, // Make the sheet scrollable
-            backgroundColor: Colors.transparent, // Match theme
+            isScrollControlled: true,
+            backgroundColor:
+                Colors.transparent, // Important for glass effect later
             builder: (context) {
+              // ... (Keep your original DraggableScrollableSheet code here) ...
+              // Note: I'll show you how to make the sheet glassy in the next step!
               return DraggableScrollableSheet(
                 initialChildSize: 0.7,
                 minChildSize: 0.5,
@@ -467,6 +465,41 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
             },
           );
         },
+        child: Container(
+          width: 60, // Standard FAB size
+          height: 60,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            // 1. Glass Gradient
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.2),
+                Colors.white.withOpacity(0.1),
+              ],
+            ),
+            // 2. Glass Border
+            border: Border.all(
+              color: Colors.white.withOpacity(0.3),
+              width: 1.5,
+            ),
+            // 3. Shadow for lift
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 10,
+                spreadRadius: 1,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.queue_music_rounded,
+            color: Colors.white,
+            size: 28,
+          ),
+        ),
       ),
     );
   }

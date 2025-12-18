@@ -1,3 +1,3 @@
 # orion
 
-A new Flutter project.
+Android Client for streaming music from musicforprogramming.net

@@ -4,6 +4,7 @@ import 'package:xml/xml.dart';
 import 'package:http/http.dart' as http;
 import 'dart:ui'; // For ImageFilter
 import '../widgets/liquid_backgrounds.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
   const MusicPlayerScreen({super.key});
@@ -49,6 +50,12 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
     });
   }
 
+  //  Save the current song index to phone storage
+  Future<void> _saveLastPlayed() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('last_played_index', currentIndex);
+  }
+
   // 2. Fetch Data from RSS Feed
   Future<void> _fetchEpisodes() async {
     try {
@@ -60,23 +67,36 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
         final document = XmlDocument.parse(response.body);
         final items = document.findAllElements('item');
 
-        setState(() {
-          playlist = items.map((node) {
-            return {
-              'title': node.findElements('title').single.innerText,
-              'artist':
-                  'Music for Programming', // The feed doesn't split artist/title cleanly
-              // We keep random images to maintain your cool UI look
-              'image':
-                  'https://images.unsplash.com/photo-1614149162883-504ce4d13909?q=80&w=600&auto=format&fit=crop',
-              'url': node.findElements('guid').single.innerText,
-            };
-          }).toList();
+        // 1. Parse the playlist
+        final newPlaylist = items.map((node) {
+          return {
+            'title': node.findElements('title').single.innerText,
+            'artist': 'Music for Programming',
+            'image':
+                'https://images.unsplash.com/photo-1614149162883-504ce4d13909?q=80&w=600&auto=format&fit=crop',
+            'url': node.findElements('guid').single.innerText,
+          };
+        }).toList();
 
-          isLoading = false; // Data loaded!
+        // 2. Load the Saved Index from Storage
+        final prefs = await SharedPreferences.getInstance();
+        int savedIndex =
+            prefs.getInt('last_played_index') ??
+            0; // Default to 0 (First song) if nothing saved
+
+        setState(() {
+          playlist = newPlaylist;
+          isLoading = false;
+
+          // 3. Validation: Make sure saved index still exists in the list
+          if (savedIndex >= 0 && savedIndex < playlist.length) {
+            currentIndex = savedIndex;
+          } else {
+            currentIndex = 0;
+          }
         });
 
-        // Load the first song automatically
+        // 4. Load the song
         if (playlist.isNotEmpty) {
           _setupAudio();
         }
@@ -266,6 +286,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                                       currentIndex = playlist.length - 1;
                                     isPlaying = false;
                                   });
+                                  _saveLastPlayed();
                                   _setupAudio();
                                   _audioPlayer.play();
                                   setState(() => isPlaying = true);
@@ -341,6 +362,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                                       currentIndex = 0;
                                     isPlaying = false;
                                   });
+                                  _saveLastPlayed();
                                   _setupAudio();
                                   _audioPlayer.play();
                                   setState(() => isPlaying = true);
@@ -448,6 +470,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                                         currentIndex = index;
                                         isPlaying = true;
                                       });
+                                      _saveLastPlayed();
                                       _setupAudio();
                                       _audioPlayer.play();
 

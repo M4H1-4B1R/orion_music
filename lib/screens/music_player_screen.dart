@@ -3,7 +3,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:xml/xml.dart';
 import 'package:http/http.dart' as http;
 import 'dart:ui'; // For ImageFilter
-import '../widgets/liquid_background.dart';
+import '../widgets/liquid_backgrounds.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
   const MusicPlayerScreen({super.key});
@@ -123,31 +123,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
       body: Stack(
         children: [
           RepaintBoundary(
-            child: Stack(
-              children: [
-                Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        const Color(0xff24243e),
-                        const Color(0xff7303c0),
-                        const Color(0xff03001e),
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned.fill(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(color: Colors.black.withOpacity(0.4)),
-                  ),
-                ),
-              ],
-            ),
+            child: Stack(children: [LiquidBackground(isPlaying: isPlaying)]),
           ),
           isLoading
               ? const Center(

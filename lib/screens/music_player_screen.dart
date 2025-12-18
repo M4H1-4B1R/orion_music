@@ -20,7 +20,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   List<Map<String, String>> playlist = [];
   int currentIndex = 0;
   bool isPlaying = false;
-  bool isLoading = true; // New variable to track loading state
+  bool isLoading = true; // variable to track loading state
   double sliderValue = 0.0;
   Duration? totalDuration;
 
@@ -28,7 +28,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   void initState() {
     super.initState();
     _fetchEpisodes(); // Fetch real data on start
-    // LISTEN TO POSITION UPDATES (Auto-move slider)
+    // (Auto-move slider)
     _audioPlayer.positionStream.listen((position) {
       setState(() {
         // Calculate slider value (Current Time / Total Time)
@@ -42,7 +42,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
       });
     });
 
-    // LISTEN TO DURATION UPDATES (How long is the song?)
+    // listen to duration updates
     _audioPlayer.durationStream.listen((duration) {
       setState(() {
         totalDuration = duration;
@@ -56,7 +56,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
     await prefs.setInt('last_played_index', currentIndex);
   }
 
-  // 2. Fetch Data from RSS Feed
+  //  Fetch Data from RSS Feed
   Future<void> _fetchEpisodes() async {
     try {
       final response = await http.get(
@@ -67,7 +67,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
         final document = XmlDocument.parse(response.body);
         final items = document.findAllElements('item');
 
-        // 1. Parse the playlist
+        // parse the playlist
         final newPlaylist = items.map((node) {
           return {
             'title': node.findElements('title').single.innerText,
@@ -78,7 +78,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
           };
         }).toList();
 
-        // 2. Load the Saved Index from Storage
+        // Load the Saved Index from Storage
         final prefs = await SharedPreferences.getInstance();
         int savedIndex =
             prefs.getInt('last_played_index') ??
@@ -88,7 +88,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
           playlist = newPlaylist;
           isLoading = false;
 
-          // 3. Validation: Make sure saved index still exists in the list
+          // Validation: Make sure saved index still exists in the list
           if (savedIndex >= 0 && savedIndex < playlist.length) {
             currentIndex = savedIndex;
           } else {
@@ -179,7 +179,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
 
                       const SizedBox(height: 40),
 
-                      // 2. Song Title (Dynamic)
+                      // Song Title
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: Text(
@@ -196,7 +196,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
 
                       const SizedBox(height: 8),
 
-                      // 3. Artist Name
+                      // Artist Name
                       Text(
                         playlist[currentIndex]['artist']!,
                         style: TextStyle(
@@ -207,7 +207,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
 
                       const SizedBox(height: 40),
 
-                      // 5. Controls
+                      // Controls
                       Column(
                         children: [
                           // A. The Slider (Top)
@@ -380,7 +380,6 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
       // inside Scaffold
       floatingActionButton: GestureDetector(
         onTap: () {
-          // This is your original Bottom Sheet logic
           showModalBottomSheet(
             context: context,
             isScrollControlled: true, // Make the sheet scrollable
@@ -393,7 +392,7 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                 expand: false,
                 builder: (context, scrollController) {
                   return ClipRRect(
-                    // Clip the blur to match our rounded corners
+                    // Clip the blur to match rounded corners
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(30),
                     ),

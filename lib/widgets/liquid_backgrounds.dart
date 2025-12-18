@@ -13,18 +13,17 @@ class LiquidBackground extends StatefulWidget {
 class _LiquidBackgroundState extends State<LiquidBackground>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double> _animation; // 1. Add an Animation object
+  late Animation<double> _animation; // Add an Animation object
 
   @override
   void initState() {
     super.initState();
-    // 2. Make it faster (7 seconds instead of 10)
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 7),
+      duration: const Duration(seconds: 7), // reduce => faster, increase => slower
     );
 
-    // 3. Add a Curve for "Fluent" motion (Eases in and out)
+    //  Add a Curve for "Fluent" motion (Eases in and out)
     _animation = CurvedAnimation(
       parent: _controller,
       curve: Curves.easeInOutSine, // Smooth sine wave motion
@@ -69,7 +68,6 @@ class _LiquidBackgroundState extends State<LiquidBackground>
 
               // Blob 1: Top Left -> Moves diagonally down-right
               Positioned(
-                // MOVES FURTHER: Increased from 200 to 400
                 top: -100 + (_animation.value * 400),
                 // Moves right significantly now
                 left: -100 + (_animation.value * 200),

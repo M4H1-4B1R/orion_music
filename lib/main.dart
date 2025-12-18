@@ -14,6 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      showPerformanceOverlay: false,
       debugShowCheckedModeBanner: false, // Removes the debug ribbon
       theme: ThemeData.dark(),
       home: const MusicPlayerScreen(),
@@ -138,25 +139,31 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
       backgroundColor: const Color(0xFF1E1E2C),
       body: Stack(
         children: [
-          Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  const Color(0xff24243e),
-                  const Color(0xff7303c0),
-                  const Color(0xff03001e),
-                ],
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(color: Colors.black.withOpacity(0.4)),
+          RepaintBoundary(
+            child: Stack(
+              children: [
+                Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        const Color(0xff24243e),
+                        const Color(0xff7303c0),
+                        const Color(0xff03001e),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned.fill(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(color: Colors.black.withOpacity(0.4)),
+                  ),
+                ),
+              ],
             ),
           ),
           isLoading
@@ -460,6 +467,8 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                                         width: 50,
                                         height: 50,
                                         fit: BoxFit.cover,
+                                        cacheWidth:
+                                            100, //decodes at 100px instead of full resolution
                                       ),
                                     ),
                                     title: Text(

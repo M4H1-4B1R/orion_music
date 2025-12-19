@@ -6,7 +6,7 @@ Android Client for streaming music from musicforprogramming.net
 
 
 TODO:
-- [] Notification & lockscreen widget
-- [] Homescreen widget
-- [] Local / offline music support
-- [] Music sleep timer
+- [ ] Notification & lockscreen widget
+- [ ] Homescreen widget
+- [ ] Local / offline music support
+- [ ] Music sleep timer

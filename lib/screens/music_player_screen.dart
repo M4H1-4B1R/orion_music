@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:ui'; // For ImageFilter
 import '../widgets/liquid_backgrounds.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../widgets/glass_button.dart';
 
 class MusicPlayerScreen extends StatefulWidget {
   const MusicPlayerScreen({super.key});
@@ -54,6 +55,216 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
   Future<void> _saveLastPlayed() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('last_played_index', currentIndex);
+  }
+
+  void _showMenuWindow(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        // Reuse the same Glass Sheet logic!
+        return ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E1E2C).withOpacity(0.7),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1.0,
+                ),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(30),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min, // Wrap content only
+                children: [
+                  // Handle Bar
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 20),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+
+                  // Menu Title
+                  const Text(
+                    "Menu",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Option 1: Local Music
+                  _buildMenuOption(
+                    icon: Icons.sd_storage_rounded,
+                    title: "Local Music",
+                    onTap: () {
+                      Navigator.pop(context); // Close menu
+                      // Navigate to Local Music Screen (Create this later)
+                      // Navigator.push(context, MaterialPageRoute(builder: (c) => const LocalMusicScreen()));
+                    },
+                  ),
+
+                  // Option 2: Timer
+                  _buildMenuOption(
+                    icon: Icons.timer_rounded,
+                    title: "Sleep Timer",
+                    onTap: () {
+                      Navigator.pop(context);
+                      // Navigate to Timer logic
+                    },
+                  ),
+
+                  // Option 3: Settings
+                  _buildMenuOption(
+                    icon: Icons.settings_rounded,
+                    title: "Settings",
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+
+                  const SizedBox(height: 20), // Bottom spacing
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Helper widget for menu items
+  Widget _buildMenuOption({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.1),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: Colors.white),
+      ),
+      title: Text(title, style: const TextStyle(color: Colors.white)),
+      trailing: const Icon(
+        Icons.arrow_forward_ios_rounded,
+        color: Colors.white54,
+        size: 16,
+      ),
+      onTap: onTap,
+    );
+  }
+
+  // The missing function!
+  void _showPlaylistWindow(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.5,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(30),
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E1E2C).withOpacity(0.7),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.2),
+                      width: 1.0,
+                    ),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(30),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      // Handle Bar
+                      Center(
+                        child: Container(
+                          margin: const EdgeInsets.only(top: 10, bottom: 10),
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+
+                      // The List
+                      Expanded(
+                        child: ListView.builder(
+                          controller: scrollController,
+                          itemCount: playlist.length,
+                          itemBuilder: (context, index) {
+                            final song = playlist[index];
+                            return ListTile(
+                              leading: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  song['image']!,
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
+                                  cacheWidth: 100, // Optimized!
+                                ),
+                              ),
+                              title: Text(
+                                song['title']!,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              subtitle: Text(
+                                song['artist']!,
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.6),
+                                ),
+                              ),
+                              onTap: () {
+                                setState(() {
+                                  currentIndex = index;
+                                  isPlaying = true;
+                                });
+                                _saveLastPlayed(); // Remember to save!
+                                _setupAudio();
+                                _audioPlayer.play();
+                                Navigator.pop(context);
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   //  Fetch Data from RSS Feed
@@ -377,152 +588,35 @@ class _MusicPlayerScreenState extends State<MusicPlayerScreen> {
                 ),
         ],
       ),
-      // inside Scaffold
-      floatingActionButton: GestureDetector(
-        onTap: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true, // Make the sheet scrollable
-            backgroundColor: Colors.transparent, // Match theme
-            builder: (context) {
-              return DraggableScrollableSheet(
-                initialChildSize: 0.7,
-                minChildSize: 0.5,
-                maxChildSize: 0.9,
-                expand: false,
-                builder: (context, scrollController) {
-                  return ClipRRect(
-                    // Clip the blur to match rounded corners
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(30),
-                    ),
-                    child: BackdropFilter(
-                      // The Blur Effect
-                      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          // The Tint: Dark semi-transparent background
-                          color: const Color(0xFF1E1E2C).withOpacity(0.7),
+      // 1. Position the buttons at the bottom center so our Row can stretch
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
 
-                          // use Border.all (Uniform) instead of Border
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.2),
-                            width: 1.0,
-                          ),
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(30),
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            // Little Handle Bar to show it's draggable
-                            Center(
-                              child: Container(
-                                margin: const EdgeInsets.only(
-                                  top: 10,
-                                  bottom: 10,
-                                ),
-                                width: 40,
-                                height: 4,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.3),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                            ),
-
-                            // The List
-                            Expanded(
-                              child: ListView.builder(
-                                controller:
-                                    scrollController, // Crucial for scrolling!
-                                itemCount: playlist.length,
-                                itemBuilder: (context, index) {
-                                  final song = playlist[index];
-                                  return ListTile(
-                                    leading: ClipRRect(
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Image.network(
-                                        song['image']!,
-                                        width: 50,
-                                        height: 50,
-                                        fit: BoxFit.cover,
-                                        cacheWidth:
-                                            100, //decodes at 100px instead of full resolution
-                                      ),
-                                    ),
-                                    title: Text(
-                                      song['title']!,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    subtitle: Text(
-                                      song['artist']!,
-                                      style: TextStyle(
-                                        color: Colors.white.withOpacity(0.6),
-                                      ),
-                                    ),
-                                    onTap: () {
-                                      //  Play this song
-                                      setState(() {
-                                        currentIndex = index;
-                                        isPlaying = true;
-                                      });
-                                      _saveLastPlayed();
-                                      _setupAudio();
-                                      _audioPlayer.play();
-
-                                      Navigator.pop(context); // Close the sheet
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
-          );
-        },
-        child: Container(
-          width: 60, // Standard FAB size
-          height: 60,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            // 1. Glass Gradient
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withOpacity(0.2),
-                Colors.white.withOpacity(0.1),
-              ],
+      // 2. The Buttons
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 24.0,
+        ), // Spacing from screen edges
+        child: Row(
+          mainAxisAlignment:
+              MainAxisAlignment.spaceBetween, // Push to Left and Right
+          children: [
+            // LEFT: The New Menu Button
+            GlassButton(
+              icon: Icons.grid_view_rounded, // "Menu" icon
+              onTap: () {
+                _showMenuWindow(context); // We will write this function next!
+              },
             ),
-            // 2. Glass Border
-            border: Border.all(
-              color: Colors.white.withOpacity(0.3),
-              width: 1.5,
+
+            // RIGHT: The Existing Playlist Button
+            GlassButton(
+              icon: Icons.queue_music_rounded,
+              onTap: () {
+                // Paste your existing showModalBottomSheet logic here
+                _showPlaylistWindow(context);
+              },
             ),
-            // 3. Shadow for lift
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 10,
-                spreadRadius: 1,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: const Icon(
-            Icons.queue_music_rounded,
-            color: Colors.white,
-            size: 28,
-          ),
+          ],
         ),
       ),
     );
